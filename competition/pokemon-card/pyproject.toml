@@ -1,11 +1,14 @@
 [project]
 name = "pokemon-card"
 version = "0.1.0"
-requires-python = ">=3.14"
-dependencies = []
+requires-python = ">=3.13"
+dependencies = [
+    "kaggle-environments>=1.30.1",
+]
 
 [dependency-groups]
 dev = [
+    "kaggle>=2.2.2",
     "mypy>=2.1.0",
     "ruff>=0.15.18",
 ]
@@ -14,5 +17,5 @@ dev = [
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.13"
 strict = true

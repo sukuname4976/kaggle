@@ -3,28 +3,7 @@ input/
 output/
 data/
 *.csv
-*.tsv
 *.parquet
-*.feather
-*.h5
-*.npy
-*.npz
-*.pkl
-*.pickle
-*.zip
-*.gz
-
-# Model weights / checkpoints
-*.pt
-*.pth
-*.ckpt
-*.onnx
-*.bin
-*.joblib
-models/
-checkpoints/
-wandb/
-lightning_logs/
 
 # Kaggle credentials
 kaggle.json
@@ -34,7 +13,6 @@ kaggle.json
 __pycache__/
 *.py[cod]
 *.egg-info/
-.eggs/
 build/
 dist/
 .venv/
@@ -47,9 +25,7 @@ env/
 # Tooling / env
 .env
 .mypy_cache/
-.pytest_cache/
 .ruff_cache/
-.ipynb_checkpoints/
 
 # OS / editor
 .DS_Store

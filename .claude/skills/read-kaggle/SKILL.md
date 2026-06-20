@@ -1,59 +1,50 @@
 ---
 name: read-kaggle
-description: Kaggle のコンペ情報や discussion を、ブラウザなし（curl + XSRF トークン）で内部 JSON API から読む。Kaggle ページが JS レンダリングで WebFetch だと本文が取れないときに使う。
+description: Kaggle のページをヘッドレスブラウザ（Playwright）でレンダリングして本文テキストを読む。Kaggle は JS 描画で WebFetch だと中身が取れないため、overview・rules・discussion などを読むときに使う。
 ---
 
 # read-kaggle スキル
 
 Kaggle のページは JS で本文を描画するため WebFetch では中身が取れない。
-このスキルは Kaggle の内部 JSON API を直接叩いて構造化データを取得する。
+このスキルは Playwright で実際にブラウザでページを開き、描画後のテキストを取る。
+公開ページなら「人間がブラウザで見えるもの」と同じ内容が読める。
 
-## 仕組み
+## 前提（初回のみ）
 
-1. Kaggle のページに GET すると `XSRF-TOKEN` Cookie が返る
-2. その値を `x-xsrf-token` ヘッダに付けて `https://www.kaggle.com/api/i/<endpoint>` に POST
-3. JSON が返る
+Chromium バイナリを1度だけ入れる（~150MB、`~/.cache/ms-playwright` に共有保存）。
 
-この一連を `fetch.sh` がやる。
+```bash
+uv run --with playwright --no-project --python 3.12 python -m playwright install chromium
+```
 
 ## 使い方
 
 ```bash
-bash .claude/skills/read-kaggle/fetch.sh <competition-name> <endpoint> '[json-body]'
+uv run --with playwright --no-project --python 3.12 \
+  python .claude/skills/read-kaggle/render.py <url> [css-selector]
 ```
 
-読みやすく整形するなら末尾に `| python3 -m json.tool` を付ける。
+- `<url>`: 読みたい Kaggle ページの URL
+- `[css-selector]`: 省略可。指定するとその要素のテキストだけ出す（省略時は body 全体）
 
-## 確認済みエンドポイント
-
-### コンペのメタデータ
+### 例: コンペ overview を読む
 
 ```bash
-bash .claude/skills/read-kaggle/fetch.sh \
-  pokemon-tcg-ai-battle-challenge-strategy \
-  competitions.CompetitionService/GetCompetition \
-  '{"competitionName":"pokemon-tcg-ai-battle-challenge-strategy"}' | python3 -m json.tool
+uv run --with playwright --no-project --python 3.12 \
+  python .claude/skills/read-kaggle/render.py \
+  https://www.kaggle.com/competitions/pokemon-tcg-ai-battle-challenge-strategy/overview
 ```
 
-返る主な項目: `title` / `briefDescription` / `deadline` / `reward` /
-`maxDailySubmissions` / `maxTeamSize` / `forumId` など。
+discussion・rules・leaderboard なども同じく URL を渡すだけ。
 
-### discussion 一覧
+## ログインが要るページ
 
-`forumId` は上の GetCompetition のレスポンスに含まれる。
+データタブ（ルール同意後）や本人確認後のコンテンツは未ログインだと見れない。
+その場合はログイン済みセッションの Cookie を Playwright に渡す必要がある
+（`storage_state` 等）。実装は未対応。必要になったら追加する。
 
-```bash
-bash .claude/skills/read-kaggle/fetch.sh \
-  pokemon-tcg-ai-battle-challenge-strategy \
-  discussions.DiscussionsService/GetTopicListByForumId \
-  '{"forumId":10272044}' | python3 -m json.tool
-```
+## 注意
 
-## 既知の制限
-
-- overview / rules の**長文本文**を返す RPC は未特定。GetCompetition の
-  `briefDescription`（短い説明）までしか取れていない。本文が必要なときは
-  エンドポイント名の特定か、別手段（ヘッドレスブラウザ等）が要る。
-- 新しいエンドポイントを使うときは、ブラウザの DevTools Network で
-  `api/i/...` のリクエスト名と body を確認して、このスキルに追記する。
-- 非公式の内部 API なので、Kaggle 側の変更で動かなくなる可能性がある。
+- 出力は本文テキスト。表組みやコードブロックの整形は崩れることがある。
+- ページによっては `networkidle` 待ちでタイムアウトすることがある（その場合も
+  取得できた範囲を出力する）。

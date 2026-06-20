@@ -91,10 +91,42 @@ with open("result.html", "w") as f:
 - 最終提出: 2026-08-16
 - 対戦継続・リーダーボード確定: 2026-08-17 〜 約08-31
 
-## 未確認・要調査
+## 補足（公式データで確認済み）
 
-- 使用可能なカード・デッキの一覧（Data ページ。ルール同意・本人確認後にアクセス）
-- 公式 PTCG ルールとシミュレータの**差異**の具体（cabt ドキュメント内）
-- observation / select の正確なスキーマ（各フィールドの型・取りうる値）
-- `main.py` のエントリポイント仕様（`agent` 関数の置き方・呼ばれ方）
-- ローカル実行時の `kaggle-environments` 必要バージョン（公式は 1.14.10 を参照）
+データ一式は `input/`（gitignore 済み）に取得済み。詳細は実ファイル参照。
+
+### カードデータ
+
+- `input/EN_Card_Data.csv` / `JP_Card_Data.csv`（約2100種）。列: Card ID, Name, Stage/Type, HP, Type, Weakness, Resistance, Retreat, Move, Cost, Damage, Effect ほか。
+- 全カード一覧 PDF: `input/Card_ID List_EN.pdf` / `_JP.pdf`。
+- プログラムからは `all_card_data()` / `all_attack()` で取得（→ `CardData` / `Attack`）。
+
+### エントリポイント / 提出
+
+- 最小サンプル: `input/sample_submission/main.py`。`agent(obs_dict) -> list[int]` を定義するだけ。
+- `deck.csv` の読み先: ローカルは同階層、提出時は `/kaggle_simulations/agent/deck.csv`。
+- 返り値の制約: 各要素は `0 <= x < len(option)`、長さは `minCount <= len <= maxCount`、重複不可。初手（`select == None`）は60枚デッキIDを返す。
+- `deck.csv` = カードID を60行。サンプル: `input/sample_submission/deck.csv`。
+
+### observation / select スキーマ
+
+**完全な定義は `input/sample_submission/cg/api.py`**（dataclass + Enum）。要点のみ:
+
+- `Observation` = `select`(SelectData|None) / `logs`(list[Log]) / `current`(State|None)。初手は select・current が None。
+- `State` = turn, yourIndex, firstPlayer, supporterPlayed, energyAttached, result, stadium, players[2]。
+- `PlayerState` = active, bench, deckCount, discard, prize, handCount, hand(自分のみ), 状態異常(poisoned 等)。
+- `SelectData` = type(SelectType), context(SelectContext), minCount/maxCount, option(list[Option])。
+- `Option` は `type`(OptionType) により使うフィールドが変わる（area/index/inPlayArea/attackId/cardId など）。
+- 主要 Enum: AreaType / EnergyType / CardType / SelectType / `SelectContext`（場面、0〜48）/ OptionType / LogType。
+- 注意: Enum・各クラスは**競技中に要素が追加されうる**（api.py に明記）。
+
+### ルール差異・勝敗理由
+
+- 公式 PTCG とシミュの差異は cabt ドキュメント参照: <https://matsuoinstitute.github.io/cabt/>
+- 勝敗理由（`LogType.RESULT` の reason）: 1=サイド0枚 / 2=山札0枚でターン開始 / 3=バトル場にポケモン無し / 4=カード効果。
+
+### バージョン / 実行環境
+
+- 公式参照は kaggle-environments 1.14.10。本リポジトリは **1.30.1** を導入済み（`cabt` 環境同梱）。
+- 同梱エンジンは `libcg.so`(Linux) / `cg.dll`(Windows) のみ。**macOS 用バイナリは無く、ローカル実行は Docker(linux/amd64) 必須**。
+- Search API（`search_begin/step/end`）で「この手を選んだらどうなるか」を先読み可能（`cg/api.py` 参照）。

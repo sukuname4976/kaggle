@@ -5,6 +5,9 @@ data/
 *.csv
 *.parquet
 
+# src 内の CSV は軽量であることを信頼して追跡する
+!**/src/**/*.csv
+
 # Kaggle credentials
 kaggle.json
 .kaggle/

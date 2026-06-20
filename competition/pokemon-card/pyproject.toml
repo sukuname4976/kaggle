@@ -19,3 +19,12 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.mypy]
 python_version = "3.13"
 strict = true
+
+# cg（cabt エンジン）は input/sample_submission/cg にあり実行時のみ存在するため型チェック対象外
+[[tool.mypy.overrides]]
+module = "cg.*"
+ignore_missing_imports = true
+
+[tool.pyright]
+# Pylance に cg（input/sample_submission/cg）の場所を教える
+extraPaths = ["input/sample_submission"]

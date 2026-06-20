@@ -1,6 +1,10 @@
 {
   "permissions": {
-    "allow": [],
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:kaggle.com)",
+      "WebFetch(domain:www.kaggle.com)"
+    ],
     "deny": []
   },
   "extraKnownMarketplaces": {

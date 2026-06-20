@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [],
+    "deny": []
+  },
+  "extraKnownMarketplaces": {
+    "sukuname-tools": {
+      "source": {
+        "source": "github",
+        "repo": "sukuname4976/portfolio"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "sukuname-workflow-plugin@sukuname-tools": true
+  }
+}

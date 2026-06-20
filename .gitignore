@@ -1,0 +1,58 @@
+# Data & large artifacts (Kaggle)
+input/
+output/
+data/
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.h5
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.zip
+*.gz
+
+# Model weights / checkpoints
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.bin
+*.joblib
+models/
+checkpoints/
+wandb/
+lightning_logs/
+
+# Kaggle credentials
+kaggle.json
+.kaggle/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.python-version
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Tooling / env
+.env
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
